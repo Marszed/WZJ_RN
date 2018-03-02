@@ -58,6 +58,9 @@ export default class App extends Component<Props> {
   render() {
     return (
       <View style={styles.container}>
+        <View>
+          <TextInputVIew />
+        </View>
         <Text style={styles.welcome}>
           Welcome to React Native!
         </Text>
@@ -97,7 +100,48 @@ const styles = StyleSheet.create({
   },
   instructions: {
     textAlign: 'center',
-    color: 'red',
+    color: 'green',
     marginBottom: 5,
   },
 });
+
+class TextInputVIew extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: '',
+      show: false
+    };
+    this._onChangeText = this._onChangeText.bind(this);
+  }
+  _hide(value){
+    this.setState({
+      show: false,
+      value
+    });
+  }
+  _onChangeText(value) {
+    this.setState({
+      show: true,
+      value
+    });
+  }
+  render() {
+    return (
+      <View>
+        <TextInput placeholder="请输入搜索关键字"
+        maxLength={100}
+        value={this.state.value}
+        onChangeText={this._onChangeText}
+        onEndEditing={this._hide.bind(this, this.state.value)}></TextInput>
+        <Text>搜索结果: </Text>
+        {
+          this.state.show ? <View>
+              <Text onPress={this._hide.bind(this, this.state.value + '街')} numberOfLines={1}>{this.state.value}街</Text>
+              <Text onPress={this._hide.bind(this, this.state.value + '车站')} numberOfLines={1}>{this.state.value}车站</Text>
+            </View> : null
+        }
+      </View>
+    );
+  }
+}
