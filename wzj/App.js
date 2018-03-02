@@ -4,8 +4,10 @@
  * @flow
  */
 
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
+  Image,
+  ScrollView,
   TextInput,
   TouchableHighlight,
   TouchableOpacity,
@@ -15,12 +17,15 @@ import {
   View
 } from 'react-native';
 
+const Dimensions = require('Dimensions');
+const screenWidth = Dimensions.get('window').width;
+
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
+  'Cmd+D or shake for dev menu',
   android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
+  'Shake or press menu button for dev menu',
 });
 
 type Props = {};
@@ -28,6 +33,7 @@ export default class App extends Component<Props> {
   static defaultProps = {
     text: 'click me'
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -36,6 +42,7 @@ export default class App extends Component<Props> {
     };
     this.onPressIn = this.onPressIn.bind(this);
   };
+
   onPressIn = () => {
     console.log('onPressIn');
     console.log(this.state.str);
@@ -55,11 +62,15 @@ export default class App extends Component<Props> {
   alert = (text) => {
     alert(text);
   };
+
   render() {
     return (
       <View style={styles.container}>
         <View>
-          <TextInputVIew />
+          <ScrollViewSwipe></ScrollViewSwipe>
+        </View>
+        <View>
+          <TextInputViewSearch />
         </View>
         <Text style={styles.welcome}>
           Welcome to React Native!
@@ -71,14 +82,14 @@ export default class App extends Component<Props> {
           {instructions}
         </Text>
         <TouchableOpacity
-          onPressIn = { this.onPressIn }
-          onPressOut = { this.onPressOut }
-          onPress = { this.onPress }
-          onLongPress = { this.onLongPress }>
+          onPressIn={ this.onPressIn }
+          onPressOut={ this.onPressOut }
+          onPress={ this.onPress }
+          onLongPress={ this.onLongPress }>
           <Text>{this.state.str}</Text>
         </TouchableOpacity>
         <TouchableHighlight
-          onPress = { this.alert.bind(this, 'hello Marszed') }>
+          onPress={ this.alert.bind(this, 'hello Marszed') }>
           <Text>{this.props.text}</Text>
         </TouchableHighlight>
       </View>
@@ -105,7 +116,7 @@ const styles = StyleSheet.create({
   },
 });
 
-class TextInputVIew extends Component {
+class TextInputViewSearch extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -114,34 +125,118 @@ class TextInputVIew extends Component {
     };
     this._onChangeText = this._onChangeText.bind(this);
   }
-  _hide(value){
+
+  _hide(value) {
     this.setState({
       show: false,
       value
     });
   }
+
   _onChangeText(value) {
     this.setState({
       show: true,
       value
     });
   }
+
   render() {
     return (
       <View>
         <TextInput placeholder="请输入搜索关键字"
-        maxLength={100}
-        value={this.state.value}
-        onChangeText={this._onChangeText}
-        onEndEditing={this._hide.bind(this, this.state.value)}></TextInput>
+                   maxLength={100}
+                   value={this.state.value}
+                   onChangeText={this._onChangeText}
+                   onEndEditing={this._hide.bind(this, this.state.value)}></TextInput>
         <Text>搜索结果: </Text>
         {
           this.state.show ? <View>
               <Text onPress={this._hide.bind(this, this.state.value + '街')} numberOfLines={1}>{this.state.value}街</Text>
-              <Text onPress={this._hide.bind(this, this.state.value + '车站')} numberOfLines={1}>{this.state.value}车站</Text>
+              <Text onPress={this._hide.bind(this, this.state.value + '车站')}
+                    numberOfLines={1}>{this.state.value}车站</Text>
             </View> : null
         }
       </View>
     );
   }
 }
+
+class ScrollViewSwipe extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      imageData: ['https://pic.wozaijia.com/upload/main/banner/aa6cfd366766cf39baa002f3146d7a5df8b3c6a5.jpg', 'https://pic.wozaijia.com/upload/main/banner/1804658d1ebe53d187e682c713928fd3f690ea59.jpg', 'https://pic.wozaijia.com/upload/main/banner/8a8fc8d5cbc4c483bebe17219d88c4a7bc7e3333.png'],
+      currentPage: 0
+    };
+  }
+
+  _renderImage() {
+    const {imageData} = this.state;
+    let allImage = [];
+    for (let i = 0, len = imageData.length; i < len; i++) {
+      allImage.push(<Image key={i} source={{uri: imageData[i]}} style={ScrollViewSwipeStyle.imageStyle}></Image>);
+    }
+    return  allImage;
+  }
+  _renderPagingIndicator() {
+    const {imageData, currentPage} = this.state;
+    let indicatorArray = [];
+    let _style;
+    for (let i = 0, len = imageData.length; i < len; i++) {
+      _style = (i === currentPage) ? {color: 'orange'} : {color: 'white'};
+      indicatorArray.push(<Text key={i} style={[{fontSize: 30}, _style]}>·</Text>);
+    }
+    return indicatorArray;
+  }
+  _onAnimationEnd(e) {
+    let offsetX = e.nativeEvent.contentOffset.x;
+    let pageIndex = Math.floor(offsetX / screenWidth);
+    this.setState({
+      currentPage: pageIndex
+    });
+  }
+
+  render() {
+    return (
+      <View style={ScrollViewSwipeStyle.container}>
+        <ScrollView horizontal={ true }
+                    ref="swipe"
+                    showsHorizontalScrollIndicator={false}
+                    pagingEnabled={true}
+                    onMomentumScrollEnd={(e) => {
+                      this._onAnimationEnd(e);
+                    }}
+        >
+          {this._renderImage()}
+        </ScrollView>
+        <View style={ScrollViewSwipeStyle.pagingIndicatorStyle}>
+          {this._renderPagingIndicator()}
+        </View>
+      </View>
+    );
+  }
+}
+
+const ScrollViewSwipeStyle = StyleSheet.create({
+  container: {
+    height: 200,
+    backgroundColor: 'red'
+  },
+  scrollViewStyle: {
+    backgroundColor: 'yellow'
+  },
+  imageStyle: {
+    width: screenWidth,
+    height: 200,
+  },
+  pagingIndicatorStyle: {
+    height: 25,
+    width: screenWidth,
+    backgroundColor: 'rgba(0,0,0,0)',
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+});
