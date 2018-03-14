@@ -14,7 +14,10 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
+  AppState,
+  Animated,
+  Easing,
 } from 'react-native';
 
 const Dimensions = require('Dimensions');
@@ -25,7 +28,7 @@ const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
   'Cmd+D or shake for dev menu',
   android: 'Double tap R on your keyboard to reload,\n' +
-  'Shake or press menu button for dev menu',
+  'Shake or press menu button for dev menu,',
 });
 
 type Props = {};
@@ -45,7 +48,6 @@ export default class App extends Component<Props> {
 
   onPressIn = () => {
     console.log('onPressIn');
-    console.log(this.state.str);
     this.setState({
       str: this.state.str + 1
     });
@@ -67,10 +69,13 @@ export default class App extends Component<Props> {
     return (
       <View style={styles.container}>
         <View>
-          <ScrollViewSwipe></ScrollViewSwipe>
+          <ScrollViewSwipe/>
         </View>
         <View>
           <TextInputViewSearch />
+        </View>
+        <View>
+          <AnimationRotateScene/>
         </View>
         <Text style={styles.welcome}>
           Welcome to React Native!
@@ -238,5 +243,50 @@ const ScrollViewSwipeStyle = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'
+  }
+});
+
+class AnimationRotateScene extends Component{
+  constructor(props){
+    super(props);
+    this.spinValue = new Animated.Value(0);
+  }
+  componentDidMount() {
+    //this.spin();
+  }
+  spin() {
+    this.spinValue.setValue(0);
+    Animated.timing(this.spinValue, {
+      toValue: 1,
+      duration: 2000,
+      easing: Easing.linear,
+    }).start(() => this.spin());
+  }
+  render() {
+    const spin = this.spinValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg'],
+    });
+    return(
+      <View style={AnimationRotateSceneStyle.container}>
+        <Animated.Image className="Image" style={{width: 100, height: 100, transform: [{rotate: spin}] }}
+        source={{uri: 'https://pic.wozaijia.com/h5-static/img/h5/play.png'}}/>
+        <TouchableOpacity onPress={this.spin.bind(this)} style={AnimationRotateSceneStyle.button}>
+          <Text>启动动画</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}
+
+const AnimationRotateSceneStyle = StyleSheet.create({
+  container: {
+    display: 'flex',
+    marginTop: 20,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  button: {
+    backgroundColor: 'red',
   }
 });
