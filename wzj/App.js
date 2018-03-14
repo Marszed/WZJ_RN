@@ -18,6 +18,7 @@ import {
   AppState,
   Animated,
   Easing,
+  NetInfo,
 } from 'react-native';
 
 const Dimensions = require('Dimensions');
@@ -41,10 +42,23 @@ export default class App extends Component<Props> {
     super(props);
     this.state = {
       str: 0,
-      searchText: ''
+      searchText: '',
+      isConnected: 'offline',
     };
     this.onPressIn = this.onPressIn.bind(this);
   };
+
+  componentDidMount() {
+    NetInfo.fetch().done((status) => {
+      console.log("==============");
+      console.log("==============");
+      console.log("==============");
+      console.log("==============");
+      this.setState({
+        isConnected: status
+      });
+    });
+  }
 
   onPressIn = () => {
     console.log('onPressIn');
@@ -78,7 +92,7 @@ export default class App extends Component<Props> {
           <AnimationRotateScene/>
         </View>
         <Text style={styles.welcome}>
-          Welcome to React Native!
+          {this.state.isConnected}Welcome to React Native!
         </Text>
         <Text style={styles.instructions}>
           To get started, edit App.js
